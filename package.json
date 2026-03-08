@@ -1,0 +1,24 @@
+{
+  "name": "clarify",
+  "version": "0.0.1",
+  "description": "Provide additional notes to specific pages in presentations",
+  "homepage": "https://github.com/EHD402/Clarify#readme",
+  "bugs": {
+    "url": "https://github.com/EHD402/Clarify/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EHD402/Clarify.git"
+  },
+  "license": "MIT",
+  "author": "Erik Hedlund",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "electron": "^40.8.0"
+  }
+}
