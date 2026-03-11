@@ -1,8 +1,12 @@
 import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
-import PDFUpload from "@/components/pdfUpload";
+import PDFUpload from "@/components/PDFUpload";
 import "./App.css";
+
+import { Button } from "./components/ui/button";
+
+import { useNavigate } from "react-router-dom";
 
 import { getDb } from "./lib/db";
 
@@ -15,6 +19,8 @@ type Document = {
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+
+  const navigate = useNavigate();
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -40,8 +46,7 @@ function App() {
         <ul>
             {documents.map((doc) => (
                 <li key={doc.id}>
-                    <span>{doc.name}</span>
-                    <span className="text-sm text-muted-foreground">{doc.path}</span>
+                    <Button variant="outline" onClick={() => navigate(`/display/${doc.id}`)}>{doc.name}</Button>
                 </li>
             ))}
         </ul>
