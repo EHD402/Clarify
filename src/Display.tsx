@@ -73,28 +73,56 @@ export default function Display() {
 
 
     return (
-        <div className="container mx-auto flex">
-            <div className="flex-1">
-                <Document 
-                    file={ file }
+        <div className="container mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-8rem)]">
+                {/* PDF panel */}
+                <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex flex-col min-h-0">
+                <div className="flex-1 min-h-0 overflow-auto rounded-md border bg-muted/20 p-3">
+                    <Document
+                    file={file}
                     onLoadSuccess={({ numPages }) =>
                         dispatch({ type: "setNumPages", payload: numPages })
                     }
-                >
-                    <Page pageNumber={state.page}  
+                    >
+                    <Page
+                        pageNumber={state.page}
                         renderTextLayer={false}
                         renderAnnotationLayer={false}
                     />
-                </Document>
-                <Button onClick={() => dispatch({ type: "left" })} disabled={state.page <= 1}>Left</Button>
-                <Button onClick={() => dispatch({ type: "right" })} disabled={state.page >= state.numPages}>Right</Button>
-            </div>
-            <div className="flex-1">
-                <Textarea 
-                    className="w-full h-full resize-none"
-                    placeholder="No text written yet..." 
+                    </Document>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                    <div className="text-sm text-muted-foreground">
+                    Page {state.page} of {state.numPages || "—"}
+                    </div>
+                    <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => dispatch({ type: "left" })}
+                        disabled={state.page <= 1}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        onClick={() => dispatch({ type: "right" })}
+                        disabled={state.page >= state.numPages}
+                    >
+                        Next
+                    </Button>
+                    </div>
+                </div>
+                </section>
+
+                {/* Notes panel */}
+                <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 flex flex-col min-h-0">
+                <h2 className="text-sm font-medium text-muted-foreground mb-3">Notes</h2>
+                <Textarea
+                    className="flex-1 min-h-0 w-full resize-none whitespace-pre-wrap break-words leading-6"
+                    placeholder="Write your notes for this page..."
                 />
+                </section>
             </div>
-        </div>
+            </div>
     )
 }

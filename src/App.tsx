@@ -40,17 +40,49 @@ function App() {
     }, []);
 
   return (
-    <main>
-      <header>
-        <PDFUpload />
-        <ul>
-            {documents.map((doc) => (
-                <li key={doc.id}>
-                    <Button variant="outline" onClick={() => navigate(`/display/${doc.id}`)}>{doc.name}</Button>
-                </li>
-            ))}
-        </ul>
-      </header>
+    <main className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8">
+        <section className="rounded-xl border bg-card text-card-foreground shadow-sm p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">My Documents</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload a PDF and open it to add notes per page.
+              </p>
+            </div>
+
+            <div className="shrink-0">
+              <PDFUpload />
+            </div>
+          </div>
+
+          <div className="mt-6 border-t pt-6">
+            {documents.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-8 text-center">
+                <p className="text-sm text-muted-foreground">No documents yet.</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Upload your first PDF to get started.
+                </p>
+              </div>
+            ) : (
+              <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {documents.map((doc) => (
+                  <li key={doc.id}>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start truncate"
+                      onClick={() => navigate(`/display/${doc.id}`)}
+                      title={doc.name}
+                    >
+                      {doc.name}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
