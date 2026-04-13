@@ -100,6 +100,15 @@ export default function Display() {
     }
 
     useEffect(() => {
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === "ArrowLeft") dispatch({ type: "left" });
+            if (e.key === "ArrowRight") dispatch({ type: "right" });
+        }
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, []);
+
+    useEffect(() => {
         getDocumentPath();
         dispatch({ type: "reset" });
     }, [id]);
