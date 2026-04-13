@@ -8,7 +8,16 @@ export async function initDb() {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             path TEXT NOT NULL
-       ) 
+       )
+    `);
+
+    await db.execute(`
+        CREATE TABLE IF NOT EXISTS notes (
+            document_id INTEGER NOT NULL,
+            page INTEGER NOT NULL,
+            content TEXT NOT NULL DEFAULT '',
+            PRIMARY KEY (document_id, page)
+        )
     `);
 
     return db;

@@ -17,6 +17,7 @@ export default function Display() {
     const { id } = useParams<{ id: string }>();
     const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
     const [state, dispatch] = useReducer(handleNavigation, { page: 1, numPages: 0 });
+    const [note, setNote] = useState("");
 
     type State = { page: number; numPages: number };
     type Action =
@@ -52,7 +53,7 @@ export default function Display() {
 
         const db = await getDb();
 
-        const match: any =  await db.select("SELECT path FROM documents WHERE id = $1", [id]);
+        const match: any = await db.select("SELECT path FROM documents WHERE id = $1", [id]);
 
         const path = match.length > 0 ? match[0].path : null;
 
@@ -62,9 +63,37 @@ export default function Display() {
         }
     }
 
+    async function loadNote(page: number) {
+        if (!id) return;
+        const db = await getDb();
+        const result: any[] = await db.select(
+            "SELECT content FROM notes WHERE document_id = $1 AND page = $2",
+            [Number(id), page]
+        );
+        setNote(result.length > 0 ? result[0].content : "");
+    }
+
+    function handleNoteChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        const content = e.target.value;
+        setNote(content);
+        if (!id) return;
+        getDb().then(db =>
+            db.execute(
+                `INSERT INTO notes (document_id, page, content) VALUES ($1, $2, $3)
+                 ON CONFLICT(document_id, page) DO UPDATE SET content = excluded.content`,
+                [Number(id), state.page, content]
+            )
+        );
+    }
+
     useEffect(() => {
         getDocumentPath();
+        dispatch({ type: "reset" });
     }, [id]);
+
+    useEffect(() => {
+        loadNote(state.page);
+    }, [id, state.page]);
 
     const file = useMemo(() => {
         if (!pdfData) return null;
@@ -120,6 +149,8 @@ export default function Display() {
                 <Textarea
                     className="flex-1 min-h-0 w-full resize-none whitespace-pre-wrap break-words leading-6"
                     placeholder="Write your notes for this page..."
+                    value={note}
+                    onChange={handleNoteChange}
                 />
                 </section>
             </div>
