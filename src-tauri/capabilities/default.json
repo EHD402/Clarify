@@ -11,6 +11,7 @@
     "fs:default",
     "fs:allow-copy-file",
     "fs:allow-mkdir",
+    "fs:allow-remove",
     "dialog:default",
     {
       "identifier": "fs:scope",
