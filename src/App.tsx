@@ -52,7 +52,7 @@ function App() {
             </div>
 
             <div className="shrink-0">
-              <PDFUpload />
+              <PDFUpload onSuccess={() => getDocuments().then(setDocuments)} />
             </div>
           </div>
 

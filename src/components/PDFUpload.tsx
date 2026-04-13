@@ -11,41 +11,66 @@ import { useState } from "react";
 
 import { getDb } from "@/lib/db";
 
-export default function PDFUpload() {
+export default function PDFUpload({ onSuccess }: { onSuccess?: () => void }) {
+    const [isOpen, setIsOpen] = useState(false);
     const [filePath, setFilePath] = useState<string | null>(null);
     const [name, setName] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    function handleOpenChange(next: boolean) {
+        if (!next) {
+            setFilePath(null);
+            setName("");
+            setError(null);
+        }
+        setIsOpen(next);
+    }
 
     async function handleChooseFile() {
         const selected = await open({
             multiple: false,
             filters: [{ name: "PDF", extensions: ["pdf"] }]
-        })
+        });
 
         if (selected) setFilePath(selected);
     }
 
-    async function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        
         if (!filePath) return;
 
-        const appDataPath = await appLocalDataDir();
-        const pdfDir = await join(appDataPath, "pdf");
-        await mkdir(pdfDir, { recursive: true });
+        setIsSubmitting(true);
+        setError(null);
 
-        const fileName = filePath.split(/[\\/]/).pop()!;
-        const destPath = await join(pdfDir, fileName);
-        await copyFile(filePath, destPath);
+        try {
+            const appDataPath = await appLocalDataDir();
+            const pdfDir = await join(appDataPath, "pdf");
+            await mkdir(pdfDir, { recursive: true });
 
-        const db = await getDb();
-        await db.execute(
-            "INSERT INTO documents (name, path) VALUES ($1, $2)",
-            [name, destPath]
-        );
+            const fileName = filePath.split(/[\\/]/).pop()!;
+            const destPath = await join(pdfDir, fileName);
+            await copyFile(filePath, destPath);
+
+            const db = await getDb();
+            await db.execute(
+                "INSERT INTO documents (name, path) VALUES ($1, $2)",
+                [name, destPath]
+            );
+
+            setIsOpen(false);
+            onSuccess?.();
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to upload PDF. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     }
 
+    const fileName = filePath ? filePath.split(/[\\/]/).pop() : null;
+
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline">Add new PDF</Button>
             </DialogTrigger>
@@ -53,41 +78,51 @@ export default function PDFUpload() {
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>
-                            Add new PDF
-                        </DialogTitle>
+                        <DialogTitle>Add new PDF</DialogTitle>
                         <DialogDescription>
-                            Provide the information for logging in
+                            Choose a PDF file and give it a name.
                         </DialogDescription>
                     </DialogHeader>
 
                     <FieldGroup>
                         <Field>
                             <Label htmlFor="title">Name</Label>
-                            <Input 
-                                id="title" 
-                                name="title" 
-                                value={name} 
+                            <Input
+                                id="title"
+                                name="title"
+                                value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Enter new document name"
+                                placeholder="Enter document name"
                                 required
                             />
                         </Field>
                         <Field>
                             <Label htmlFor="file">PDF</Label>
-                            <Button type="button" variant="outline" onClick={handleChooseFile}>Choose PDF</Button>
-                            <span>{filePath ?? "No file selected"}</span>
+                            <Button type="button" variant="outline" onClick={handleChooseFile}>
+                                Choose PDF
+                            </Button>
+                            <span className="text-sm text-muted-foreground">
+                                {fileName ?? "No file selected"}
+                            </span>
                         </Field>
                     </FieldGroup>
 
+                    {error && (
+                        <p className="text-sm text-destructive mt-3">{error}</p>
+                    )}
+
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
+                            <Button type="button" variant="outline" disabled={isSubmitting}>
+                                Cancel
+                            </Button>
                         </DialogClose>
-                        <Button type="submit" disabled={!filePath || !name}>Add PDF</Button>
+                        <Button type="submit" disabled={!filePath || !name || isSubmitting}>
+                            {isSubmitting ? "Adding..." : "Add PDF"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
         </Dialog>
-    )
+    );
 }
