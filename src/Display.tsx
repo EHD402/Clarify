@@ -101,6 +101,7 @@ export default function Display() {
 
     useEffect(() => {
         function onKeyDown(e: KeyboardEvent) {
+            if (document.activeElement?.tagName === "TEXTAREA") return;
             if (e.key === "ArrowLeft") dispatch({ type: "left" });
             if (e.key === "ArrowRight") dispatch({ type: "right" });
         }
